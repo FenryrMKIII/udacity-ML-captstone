@@ -1,1 +1,6 @@
 *.csv
+*.pkl
+
+img
+
+*checkpoint*
