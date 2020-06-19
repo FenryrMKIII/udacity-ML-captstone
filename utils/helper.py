@@ -317,7 +317,7 @@ def df_to_numeric(df):
 def get_non_numeric(df):
     non_numeric = []
     for col in df.columns:
-        if df[col].dtype not in (np.float64, np.int64):
+        if df[col].dtype not in (np.number): #(np.float64, np.int64):
             non_numeric.append(col)
     return non_numeric
 
@@ -362,8 +362,14 @@ def split_cameo(df, column):
     """    
     
     def spit_content(row):
-        feat1, feat2 = list(str(int(df['CAMEO_INTL_2015'].iloc[0])))
-        return [int(feat1), int(feat2)]
+        if (isinstance(row,str)) :
+            feat1, feat2 = list(str(int(row)))
+        elif np.isnan(row):
+            feat1, feat2 = [np.nan, np.nan]
+        elif isinstance(row, (np.number, float, int)):
+            feat1, feat2 = list(str(int(row)))
+            
+        return [feat1, feat2]
         
         
     columns = df[column].apply(spit_content)
@@ -371,4 +377,4 @@ def split_cameo(df, column):
     df = df.join(columns)
     df.drop(column, axis=1, inplace=True)
     
-    return df
+    return df, df.columns
