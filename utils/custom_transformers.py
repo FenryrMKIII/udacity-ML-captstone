@@ -24,7 +24,6 @@ class cleaning(BaseEstimator, TransformerMixin):
         
         self.to_drop = to_drop
         
-        
     
     def fit(self, X, y=None):
         
@@ -32,8 +31,7 @@ class cleaning(BaseEstimator, TransformerMixin):
         # so that train & test set get identical treatment !
         
         if not isinstance(X, pd.DataFrame):
-            raise TypeError('only dataframe are handled at the moment')
-            
+            raise TypeError('only dataframe are handled at the moment')            
         
             
         self.ins_col_ = identify_insignificant_columns(X, thresh = self.ins_threshold)
@@ -44,14 +42,33 @@ class cleaning(BaseEstimator, TransformerMixin):
         print(f'''columns {self.correlated_col_} will be dropped because they are correlated /
               above {self.corr_threshold*100}% with another one''')
         
-        self.object_columns_ = X.select_dtypes('object').columns
-        print(f'columns {self.object_columns_} will be considered as object columns')
+        col_drop = ['LNR']
+        col_kept = X.columns.difference(col_drop)
+                    
+        self.ins_col_ = identify_insignificant_columns(X[col_kept], thresh = self.ins_threshold)
+        print(('columns\n{}\nwill be dropped because they' 
+               'contain a number of nan above {}%').format('\n'.join(str(x) for x in self.ins_col_), self.ins_threshold*100))
+        
+        col_drop = col_drop + self.ins_col_
+        col_kept = X.columns.difference(col_drop)
+
+        corr_ = X[col_kept].corr()
+        (main_elements_, self.correlated_col_) = remove_high_corr(corr_, self.corr_threshold)
+        print(('columns\n{}\nwill be dropped because they are correlated'
+               'above {}% with another one').format('\n'.join(str(x) for x in self.correlated_col_),
+                                                   self.corr_threshold*100))
+
+        col_drop = col_drop + self.correlated_col_
+        col_kept = X.columns.difference(col_drop)
+        
+        self.object_columns_ = X[col_kept].select_dtypes('object').columns
+        print('columns\n{}\n will be considered as object columns'.format('\n'.join(str(x) for x in self.object_columns_)))
               
-        self.numeric_, self.non_numeric_ = identify_numeric(X)
-        print(f'columns {self.numeric_} will be considered as numeric')
-        print(f'columns {self.non_numeric_} will be considered as non-numeric')
+        self.numeric_, self.non_numeric_ = identify_numeric(X[col_kept])
+        print('columns\n{}\n will be considered as numeric'.format('\n'.join(str(x) for x in self.numeric_)))
+        print('columns\n{}\n will be considered as non-numeric'.format('\n'.join(str(x) for x in self.non_numeric_)))
               
-        self.nan_info_, self.replacements_ = construct_fill_na(self.attribute_filepath, X) # find nan equivalent
+        self.nan_info_, self.replacements_ = construct_fill_na(self.attribute_filepath, X[col_kept]) # find nan equivalent
         
         return self
     
@@ -63,10 +80,10 @@ class cleaning(BaseEstimator, TransformerMixin):
               
         # dropping stuff
         if self.to_drop:
-            X.drop(self.to_drop, axis=1, inplace=True, errors='ignore')
+            X.drop(self.to_drop, axis=1, inplace=True)
         drop_full_empty_row(X)
-        X.drop(self.ins_col_, axis=1, inplace=True)
-        X.drop(self.correlated_col_, axis=1, inplace=True)
+        X.drop(self.ins_col_, axis=1, inplace=True, errors = 'ignore') # ignoring errors since some identified columns could already be dropped in previous steps
+        X.drop(self.correlated_col_, axis=1, inplace=True, errors = 'ignore') # ignoring errors since some identified columns could already be dropped in previous steps
               
         # Dealing with object columns
         
@@ -76,13 +93,9 @@ class cleaning(BaseEstimator, TransformerMixin):
         
         # replacing nan placeholder immediately
         X = X.replace(99942, np.nan)
-              
-        not_converted_ = df_to_numeric(X)
-        X.loc[:,not_converted] = X.loc[:,not_converted_].astype('category')
-        X = X.replace(99942, np.nan)
         
-        X[self.numeric_] = pd.to_numeric(X[self.numeric], errors='raise')
-        X.loc[:,self.non_numeric_] = X.loc[:,self.non_numeric].astype('category')
+        X.loc[:, self.numeric_], _ = df_to_numeric(X.loc[:, self.numeric_])
+        X.loc[:, self.non_numeric_] = X.loc[:, self.non_numeric_].astype('category')
               
         
         make_replacement(X, self.replacements_) # make dataframe consistent if multiple nan equivalent for same feature
