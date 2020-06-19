@@ -361,7 +361,7 @@ def split_cameo(df, column):
     
     """    
     
-    def spit_content(row):
+    def split_content(row):
         if (isinstance(row,str)) :
             feat1, feat2 = list(str(int(row)))
         elif np.isnan(row):
@@ -370,10 +370,11 @@ def split_cameo(df, column):
             feat1, feat2 = list(str(int(row)))
             
         return [feat1, feat2]
-        
-        
-    columns = df[column].apply(spit_content)
-    columns = pd.DataFrame(columns.tolist(), index= df.index, columns=["CAMEO1", "CAMEO2"])
+    
+    columns = []
+    for index, value in df[column].items():
+        columns.append((split_content(value)))
+    columns = pd.DataFrame(columns, index= df.index, columns=["CAMEO1", "CAMEO2"])
     df = df.join(columns)
     df.drop(column, axis=1, inplace=True)
     
