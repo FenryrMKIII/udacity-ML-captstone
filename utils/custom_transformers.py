@@ -14,17 +14,15 @@ class cleaning(BaseEstimator, TransformerMixin):
         to_drop (list) : columns to be dropped
         ins_thresholrd (float) : [0.0 - 1.0] insignificant threshold above which columns containing that proportion of NaN get dropped
         corr_threshold (float) : [0.0 - 1.0] correlation threshold above which correlated columns get dropped (first one is kept)
-        attribute_filepath (str of pathlib.Path) : path to the Excel file containing attributes information
+        attribute_filepath (pathlib.Path) : path to the Excel file containing attributes information
         
         """
         
-        self.attribute_filepath = Path(attribute_filepath)
+        self.attribute_filepath = attribute_filepath
         self.ins_threshold = ins_threshold
         self.corr_threshold = corr_threshold
         
         self.to_drop = to_drop
-        self.ins_col = None
-        self.correlated_col = None
         
         
     
@@ -37,18 +35,14 @@ class cleaning(BaseEstimator, TransformerMixin):
             raise TypeError('only dataframe are handled at the moment')
             
         
-        
-        # drop user selected columns
-        if to_drop is not None:
-            self.to_drop+=to_drop
             
-        self.ins_col_ = identify_insignificant_columns(X, thresh = ins_threshold)
-        print(f'columns {self.ins_col} will be dropped because they contain a number of nan above {ins_threshold*100}%')
+        self.ins_col_ = identify_insignificant_columns(X, thresh = self.ins_threshold)
+        print(f'columns {self.ins_col_} will be dropped because they contain a number of nan above {self.ins_threshold*100}%')
         
         corr_ = X.corr()
         (main_elements_, self.correlated_col_) = remove_high_corr(corr_, corr_threshold)
         print(f'''columns {self.correlated_col_} will be dropped because they are correlated /
-              above {corr_threshold*100}% with another one''')
+              above {self.corr_threshold*100}% with another one''')
         
         self.object_columns_ = X.select_dtypes('object').columns
         print(f'columns {self.object_columns_} will be considered as object columns')
@@ -68,7 +62,8 @@ class cleaning(BaseEstimator, TransformerMixin):
         X.set_index('LNR', inplace=True)
               
         # dropping stuff
-        X.drop(self.to_drop, axis=1, inplace=True, errors='ignore')
+        if self.to_drop:
+            X.drop(self.to_drop, axis=1, inplace=True, errors='ignore')
         drop_full_empty_row(X)
         X.drop(self.ins_col_, axis=1, inplace=True)
         X.drop(self.correlated_col_, axis=1, inplace=True)
