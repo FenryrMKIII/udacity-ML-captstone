@@ -1,3 +1,6 @@
+import numpy as np
+import pandas as pd
+
 def remove_high_corr(corr, threshold, output_high_corr=False):
     """
     Only  keep one element from a chain of highly (> threshold) correlated elements
@@ -185,7 +188,7 @@ def construct_fill_na(filename, df):
     return nan_info, replacements
 
 
-def make_replacement(df, replacement):
+def make_replacement(df, replacements):
     """
     replace values in a dataframe according to a dictionnary
 
@@ -308,7 +311,7 @@ def df_to_numeric(df):
         except Exception as e:
             print(f'column {col} could not be converted to numeric')
             column_not_converted.append(col)
-    return column_not_converted
+    return df, column_not_converted
 
 
 def get_non_numeric(df):
@@ -359,7 +362,7 @@ def split_cameo(df, column):
     """    
     
     def spit_content(row):
-        feat1, feat2 = list(str(int(pop_df_selected['CAMEO_INTL_2015'].iloc[0])))
+        feat1, feat2 = list(str(int(df['CAMEO_INTL_2015'].iloc[0])))
         return [int(feat1), int(feat2)]
         
         
