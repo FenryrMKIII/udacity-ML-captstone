@@ -371,4 +371,4 @@ def split_cameo(df, column):
     df = df.join(columns)
     df.drop(column, axis=1, inplace=True)
     
-    return df
+    return df, df.columns

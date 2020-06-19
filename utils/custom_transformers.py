@@ -34,14 +34,14 @@ class cleaning(BaseEstimator, TransformerMixin):
             raise TypeError('only dataframe are handled at the moment')
         
         col_drop = ['LNR']
-        col_kept = X.columns.difference(col_drop)
+        col_kept = X.columns.difference(col_drop, sort = False)
                     
         self.ins_col_ = identify_insignificant_columns(X[col_kept], thresh = self.ins_threshold)
         print(('columns\n{}\nwill be dropped because they' 
                'contain a number of nan above {}%').format('\n'.join(str(x) for x in self.ins_col_), self.ins_threshold*100))
         
         col_drop = col_drop + self.ins_col_
-        col_kept = X.columns.difference(col_drop)
+        col_kept = X.columns.difference(col_drop, sort = False)
 
         corr_ = X[col_kept].corr()
         (main_elements_, self.correlated_col_) = remove_high_corr(corr_, self.corr_threshold)
@@ -50,7 +50,7 @@ class cleaning(BaseEstimator, TransformerMixin):
                                                    self.corr_threshold*100))
 
         col_drop = col_drop + self.correlated_col_
-        col_kept = X.columns.difference(col_drop)
+        col_kept = X.columns.difference(col_drop, sort = False)
         
         self.object_columns_ = X[col_kept].select_dtypes('object').columns
         print('columns\n{}\n will be considered as object columns'.format('\n'.join(str(x) for x in self.object_columns_)))
@@ -61,6 +61,8 @@ class cleaning(BaseEstimator, TransformerMixin):
               
         self.nan_info_, self.replacements_ = construct_fill_na(self.attribute_filepath, X[col_kept]) # find nan equivalent
         
+        self.features_names_ = col_kept
+                
         return self
     
     def transform(self, X):
@@ -84,7 +86,7 @@ class cleaning(BaseEstimator, TransformerMixin):
         
         # replacing nan placeholder immediately
         X = X.replace(99942, np.nan)
-        
+#         
         X.loc[:, self.numeric_], _ = df_to_numeric(X.loc[:, self.numeric_])
         X.loc[:, self.non_numeric_] = X.loc[:, self.non_numeric_].astype('category')
               
@@ -92,7 +94,10 @@ class cleaning(BaseEstimator, TransformerMixin):
         make_replacement(X, self.replacements_) # make dataframe consistent if multiple nan equivalent for same feature
         fill_na_presc(X, self.nan_info_) # replace nan equivalent by np.nan
 
-        make_replacement(X, self.replacements_) # make dataframe consistent if multiple nan equivalent for same feature
-        fill_na_presc(X, self.nan_info_) # replace nan equivalent by np.nan
-        
-        X = split_cameo(X, 'CAMEO_INTL_2015')        
+        X, self.features_names = split_cameo(X, 'CAMEO_INTL_2015')
+
+        return X.values
+
+
+    def get_feature_names(self, *args):
+        return self.features_names_ 
