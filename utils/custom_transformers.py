@@ -31,16 +31,7 @@ class cleaning(BaseEstimator, TransformerMixin):
         # so that train & test set get identical treatment !
         
         if not isinstance(X, pd.DataFrame):
-            raise TypeError('only dataframe are handled at the moment')            
-        
-            
-        self.ins_col_ = identify_insignificant_columns(X, thresh = self.ins_threshold)
-        print(f'columns {self.ins_col_} will be dropped because they contain a number of nan above {self.ins_threshold*100}%')
-        
-        corr_ = X.corr()
-        (main_elements_, self.correlated_col_) = remove_high_corr(corr_, corr_threshold)
-        print(f'''columns {self.correlated_col_} will be dropped because they are correlated /
-              above {self.corr_threshold*100}% with another one''')
+            raise TypeError('only dataframe are handled at the moment')
         
         col_drop = ['LNR']
         col_kept = X.columns.difference(col_drop)
