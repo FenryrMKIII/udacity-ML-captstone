@@ -21,7 +21,6 @@ class naning(BaseEstimator, TransformerMixin):
             raise TypeError('only dataframe are handled at the moment')
         
         self.features_names_ = X.columns
-
                       
         self.nan_info_, self.replacements_ = construct_fill_na(self.attribute_filepath, X) # find nan equivalent
                         
@@ -33,8 +32,8 @@ class naning(BaseEstimator, TransformerMixin):
         
         make_replacement(X, self.replacements_) # make dataframe consistent if multiple nan equivalent for same feature
         fill_na_presc(X, self.nan_info_) # replace nan equivalent by np.nan
-
-        return X.values
+        
+        return X
 
 
     def get_feature_names(self, *args):
@@ -102,6 +101,8 @@ class cleaning(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X):
+        init_col_nub = len(X.columns)
+        
         if not isinstance(X, pd.DataFrame):
             raise TypeError('only dataframe are handled at the moment')
         
@@ -115,7 +116,6 @@ class cleaning(BaseEstimator, TransformerMixin):
         X.drop(self.correlated_col_, axis=1, inplace=True, errors = 'ignore') # ignoring errors since some identified columns could already be dropped in previous steps
               
         # Dealing with object columns
-        
         X.loc[:,self.object_columns_] = X.loc[:,self.object_columns_].replace('[X]+', '99942', regex=True) #99942 will be used as a flag for NaN
                                                                                                # mandatory as regex cannot replace by non-string
                                                                                                # inplace not used because not working (apparently, bug according to SO with mixed data)
@@ -127,9 +127,51 @@ class cleaning(BaseEstimator, TransformerMixin):
         X.loc[:, self.non_numeric_] = X.loc[:, self.non_numeric_].astype('category')
               
         X, self.features_names_ = split_cameo(X, 'CAMEO_INTL_2015')
+        
+        end_col_nub = len(X.columns)
+        
+        print(f'before cleaning : {init_col_nub} columns, after cleanning : {end_col_nub} columns')
 
-        return X.values
+        return X
 
 
     def get_feature_names(self, *args):
         return self.features_names_ 
+    
+class low_freq(BaseEstimator, TransformerMixin):
+    def __init__(self): # no *args or **kargs, provides methods get_params() and set_params()
+        
+        pass
+    
+    def fit(self, X, y=None):
+                
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError('only dataframe are handled at the moment')
+        
+        self.features_names_ = X.columns
+
+                                              
+        return self
+    
+    def transform(self, X):
+        
+        high_freq = []
+        low_freq = []
+        for col in X.columns:
+            X[col], freq_flag = group_low_freq(X[col])
+            if freq_flag == 'low':
+                low_freq.append(col)
+            else:
+                high_freq.append(col)
+                
+        print('columns\n{}\n are considered as low frequency columns'.format('\n'.join(low_freq)))
+        print('columns\n{}\n are considered as low frequency columns'.format('\n'.join(high_freq)))
+        
+        return X
+
+
+    def get_feature_names(self, *args):
+        return self.features_names_ 
+    
+    
+

@@ -411,3 +411,33 @@ def split_cameo(df, column):
     df.drop(column, axis=1, inplace=True)
     
     return df, df.columns
+
+def group_low_freq(series, threshold = 0.05):
+    """
+    replace low frequency (under threshold) categories with the same low frequency category to reduce categories number (grouping)
+    
+    Parameters:
+    -----------
+    series (pandas.Series) : series in which low frequency categories will be grouped under same category
+    threshold (float) : threshold below which frequency is deemed low and category will be replaced
+    
+    Returns:
+    --------
+    series (pandas.Series) : series with low frequezncy categories grouped under same category
+    freq_flag (str) : flag identifiying wheter the processed series met the low frequency ('low') criterion or not ('high')
+    
+    Notes:
+    ------
+    if only one low frequency is identified, nothing is changed
+    
+    """
+    
+    criterion = 0.05
+    freq = series.value_counts()/len(series)
+    if (freq<criterion).sum() <= 1:
+        freq_flag = 'high'
+    else:
+        freq_flag = 'low'
+        series = series.mask(series.map(freq)<0.05, freq[freq<criterion].index[0]) # where frequency is below criterion
+                                                                             # replace with first most frequent value below criterion
+    return series,freq_flag
