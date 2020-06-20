@@ -4,6 +4,44 @@ from sklearn.base import BaseEstimator, TransformerMixin
 import pandas as pd
 from pathlib import Path
 
+class naning(BaseEstimator, TransformerMixin):
+    def __init__(self, attribute_filepath='attribute.xlsx'): # no *args or **kargs, provides methods get_params() and set_params()
+        """
+        Parameters:
+        -----------
+        attribute_filepath (pathlib.Path) : path to the Excel file containing attributes information
+        
+        """
+        
+        self.attribute_filepath = attribute_filepath
+    
+    def fit(self, X, y=None):
+                
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError('only dataframe are handled at the moment')
+        
+        self.features_names_ = X.columns
+
+                      
+        self.nan_info_, self.replacements_ = construct_fill_na(self.attribute_filepath, X) # find nan equivalent
+                        
+        return self
+    
+    def transform(self, X):
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError('only dataframe are handled at the moment')              
+        
+        make_replacement(X, self.replacements_) # make dataframe consistent if multiple nan equivalent for same feature
+        fill_na_presc(X, self.nan_info_) # replace nan equivalent by np.nan
+
+        return X.values
+
+
+    def get_feature_names(self, *args):
+        return self.features_names_ 
+
+    
+
 class cleaning(BaseEstimator, TransformerMixin):
     
     def __init__(self, to_drop = [], ins_threshold=0.6, 
@@ -55,7 +93,7 @@ class cleaning(BaseEstimator, TransformerMixin):
         self.object_columns_ = X[col_kept].select_dtypes('object').columns
         print('columns\n{}\n will be considered as object columns'.format('\n'.join(str(x) for x in self.object_columns_)))
               
-        self.numeric_, self.non_numeric_ = identify_numeric(X[col_kept])
+        self.numeric_, self.non_numeric_ = identify_numeric_from_df(X[col_kept])
         print('columns\n{}\n will be considered as numeric'.format('\n'.join(str(x) for x in self.numeric_)))
         print('columns\n{}\n will be considered as non-numeric'.format('\n'.join(str(x) for x in self.non_numeric_)))
               
