@@ -145,7 +145,11 @@ def construct_fill_na(filename, df):
     target_index = []
     for i, row in nan_info.iterrows():
         try:
-            if "unknown" in row.iloc[-1]:
+            string = row.iloc[-1].split()
+            if (
+                ("unknown" in string) or 
+                ("no" in string and "known" in string)
+            ):
                 target_index.append(i)
         except:
             continue
@@ -177,11 +181,11 @@ def construct_fill_na(filename, df):
                     for key, value in replacements[col].items():
                         replacements[col] = {float(key.replace(',','')) : float(value.replace(',',''))}
 
-    for row in nan_info.index:
-        if row in df.columns:
-            if df[row].dtype != 'object':
-                nan_info.loc[row,:] = float(nan_info.loc[row,:].values) # make sure the fill_na value type matches corresponding column dtype in original dataframe
-                                                     # everything can be set to float except 'object' dtype for which fill_na value which must remain string, already the case
+    # for row in nan_info.index:
+    #     if row in df.columns:
+    #         if df[row].dtype != 'object':
+    #             nan_info.loc[row,:] = float(nan_info.loc[row,:].values) # make sure the fill_na value type matches corresponding column dtype in original dataframe
+    #                                                  # everything can be set to float except 'object' dtype for which fill_na value which must remain string, already the case
                           
                     
                       
@@ -238,17 +242,32 @@ def fill_na_presc(df, nan_fill):
     ! TODO : make it generic and parameterized
 
     """
+    def replace_combinations(series, replace_value):
+        if series.dtype in (np.int32,np.int64, int):
+            series = series.replace(int(replace_value), np.nan)
+        elif series.dtype in (np.float32,np.float64, float):
+            series = series.replace(float(replace_value), np.nan)
+        elif series.dtype == 'object':
+            # hope a replacement works
+            # this is already assumed in construct_fill_na method 
+            # since object columns are not handled specifically 
+            # it is assumed that the nan equivalent in replacement & nan_fill
+            # corresponds to nan value in the dataframe
+            series = series.replace(replace_value, np.nan)
+        
+        return series
+
     for col in df.columns :
         if col in nan_fill.index:
             try:
                 #df.loc[df[col].isna()==True, col] = nan_fill.loc[col, "Value"]
-                df.loc[:,col] = df.loc[:,col].replace(nan_fill.loc[col, "Value"], np.nan) # inplace replace is buggy, don't use
+                df.loc[:,col] = replace_combinations(df.loc[:,col], nan_fill.loc[col, "Value"]) # inplace replace is buggy, don't use
             except Exception as e:
                 if "Cannot setitem" in str(e):
                     # if no unknown category yet in that column, add the value to the categories
                     df[col].cat.set_categories(np.hstack((df[col].cat.categories.values,
                                      np.nan)), inplace=True)
-                    df.loc[:,col] = df.loc[:,col].replace(nan_fill.loc[col, "Value"], np.nan) # inplace replace is buggy, don't use
+                    df.loc[:,col] = replace_combinations(nan_fill.loc[col, "Value"], np.nan) # inplace replace is buggy, don't use
                 else:
                     print(e)
                     
