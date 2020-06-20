@@ -271,7 +271,7 @@ def fill_na_presc(df, nan_fill):
                 else:
                     print(e)
                     
-def identify_numeric(filename, df):
+def identify_numeric_from_filename(filename, df):
     """
     Identify numeric columns based on information contained in filename
     
@@ -310,7 +310,20 @@ def identify_numeric(filename, df):
     return list(num_info.index)
 
 
-def identify_numeric(df):
+def identify_numeric_from_df(df):
+    """
+    Identify numeric columns based on df values
+    
+    Parameters:
+    -----------
+    df (pandas.DataFrame) : datafrale that will be used to infer numeric columns
+        
+    Returns:
+    --------
+    a tuple of 2 lists providing the names of numeric & non-numeric columns
+
+    
+    """    
     non_numeric = []
     numeric = []
     for col in df.columns:
