@@ -1,6 +1,14 @@
 *.csv
 *.pkl
+*.swo
+*.swp
+
 
 img
 
 *checkpoint*
+*BASE*
+*BACKUP*
+*LOCAL*
+*REMOTE*
+*cpython*

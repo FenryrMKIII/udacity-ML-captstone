@@ -70,7 +70,8 @@ class cleaning(BaseEstimator, TransformerMixin):
         if not isinstance(X, pd.DataFrame):
             raise TypeError('only dataframe are handled at the moment')
         
-        col_drop = ['LNR']
+        #col_drop = ['LNR'] + self.to_drop
+        col_drop = self.to_drop
         col_kept = X.columns.difference(col_drop, sort = False)
                     
         self.ins_col_ = identify_insignificant_columns(X[col_kept], thresh = self.ins_threshold)
@@ -106,7 +107,7 @@ class cleaning(BaseEstimator, TransformerMixin):
         if not isinstance(X, pd.DataFrame):
             raise TypeError('only dataframe are handled at the moment')
         
-        X.set_index('LNR', inplace=True)
+        # X.set_index('LNR', inplace=True)
               
         # dropping stuff
         if self.to_drop:

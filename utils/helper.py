@@ -1,5 +1,9 @@
 import numpy as np
 import pandas as pd
+from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.feature_extraction.text import _VectorizerMixin
+from sklearn.feature_selection._base import SelectorMixin
+
 
 def remove_high_corr(corr, threshold, output_high_corr=False):
     """
@@ -441,3 +445,40 @@ def group_low_freq(series, threshold = 0.05):
         series = series.mask(series.map(freq)<0.05, freq[freq<criterion].index[0]) # where frequency is below criterion
                                                                              # replace with first most frequent value below criterion
     return series,freq_flag
+
+
+def get_feature_out(estimator, feature_in):
+    if hasattr(estimator,'get_feature_names'):
+        if isinstance(estimator, _VectorizerMixin):
+            # handling all vectorizers
+            return [f'vec_{f}' \
+                for f in estimator.get_feature_names()]
+        else:
+            return estimator.get_feature_names(feature_in)
+    elif isinstance(estimator, SelectorMixin):
+        return np.array(feature_in)[estimator.get_support()]
+    else:
+        return feature_in
+
+
+def get_ct_feature_names(ct):
+    # handles all estimators, pipelines inside ColumnTransfomer
+    # doesn't work when remainder =='passthrough'
+    # which requires the input column names.
+    output_features = []
+
+    for name, estimator, features in ct.transformers:
+        transformer = ct.named_transformers_[name]
+        if name!='remainder':
+            if isinstance(transformer, Pipeline):
+                current_features = features
+                for step in transformer:
+                    current_features = get_feature_out(step, current_features)
+                features_out = current_features
+            else:
+                features_out = get_feature_out(transformer, features)
+            output_features.extend(features_out)
+        elif estimator=='passthrough':
+            output_features.extend(ct._feature_names_in[features])
+
+    return output_features
