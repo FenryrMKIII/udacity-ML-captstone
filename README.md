@@ -31,3 +31,5 @@ The main analysis is performed in the jupyter notebooks. Necessary graphs and co
 The analysis makes use of support functions & classes defined in utils.
 
 The captstone proposal & report are provided in the PDF.
+
+The capstone proposal review can be found [here](https://review.udacity.com/?utm_campaign=ret_000_auto_ndxxx_submission-reviewed&utm_source=blueshift&utm_medium=email&utm_content=reviewsapp-submission-reviewed&bsft_clkid=e4cfb43a-e208-4f98-af70-68fa8c31edc5&bsft_uid=61eed1f9-152f-4990-b54b-ef42e4f4d976&bsft_mid=dd30752c-636d-4c3d-986d-dbb7111d78a3&bsft_eid=6f154690-7543-4582-9be7-e397af208dbd&bsft_txnid=8070670a-42e9-4b5e-8503-79039647d360&bsft_mime_type=html&bsft_ek=2020-06-01T15%3A29%3A59Z#!/reviews/2334880)
