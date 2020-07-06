@@ -98,6 +98,8 @@ class cleaning(BaseEstimator, TransformerMixin):
         print('columns\n{}\n will be considered as non-numeric'.format('\n'.join(str(x) for x in self.non_numeric_)))
                       
         self.features_names_ = col_kept
+        
+        print('following columns will be dropped:', '\n'.join(col_drop))
                 
         return self
     
@@ -166,7 +168,7 @@ class low_freq(BaseEstimator, TransformerMixin):
                 high_freq.append(col)
                 
         print('columns\n{}\n are considered as low frequency columns'.format('\n'.join(low_freq)))
-        print('columns\n{}\n are considered as low frequency columns'.format('\n'.join(high_freq)))
+        print('columns\n{}\n are considered as high frequency columns'.format('\n'.join(high_freq)))
         
         return X
 

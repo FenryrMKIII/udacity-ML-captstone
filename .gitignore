@@ -2,6 +2,7 @@
 *.pkl
 *.swo
 *.swp
+*.pyc
 
 
 img
