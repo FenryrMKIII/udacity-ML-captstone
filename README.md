@@ -1,4 +1,4 @@
-# udacity-ML-captstone
+# udacity-ML-captstone : Description of the task per Udacity
 
 ## Capstone Project: Create a Customer Segmentation Report for Arvato Financial Services
 
@@ -24,3 +24,12 @@ Otherwise, all of the remaining columns are the same between the three data file
 In the below cell, we've provided some initial code to load in the first two datasets. Note for all of the `.csv` data files in this project that they're semicolon (`;`) delimited, so an additional argument in the [`read_csv()`](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.read_csv.html) call has been included to read in the data properly. Also, considering the size of the datasets, it may take some time for them to load completely.
 
 You'll notice when the data is loaded in that a warning message will immediately pop up. Before you really start digging into the modeling and analysis, you're going to need to perform some cleaning. Take some time to browse the structure of the data and look over the informational spreadsheets to understand the data values. Make some decisions on which features to keep, which features to drop, and if any revisions need to be made on data formats. It'll be a good idea to create a function with pre-processing steps, since you'll need to clean all of the datasets before you work with them.
+
+# Repository structure
+
+The main analysis is performed in the jupyter notebooks. Necessary graphs and comments can be found inside the notebooks.
+The analysis makes use of support functions & classes defined in utils.
+
+The captstone proposal & report are provided in the PDF.
+
+The capstone proposal review can be found [here](https://review.udacity.com/?utm_campaign=ret_000_auto_ndxxx_submission-reviewed&utm_source=blueshift&utm_medium=email&utm_content=reviewsapp-submission-reviewed&bsft_clkid=e4cfb43a-e208-4f98-af70-68fa8c31edc5&bsft_uid=61eed1f9-152f-4990-b54b-ef42e4f4d976&bsft_mid=dd30752c-636d-4c3d-986d-dbb7111d78a3&bsft_eid=6f154690-7543-4582-9be7-e397af208dbd&bsft_txnid=8070670a-42e9-4b5e-8503-79039647d360&bsft_mime_type=html&bsft_ek=2020-06-01T15%3A29%3A59Z#!/reviews/2334880)
